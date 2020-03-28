@@ -9,7 +9,7 @@ function App() {
   return (
     <div className="App">
       <Router history={history}>
-        <TopBar />
+        {/* <TopBar /> */}
         <Route path="/" exact component={HomePage} />
       </Router>
     </div>

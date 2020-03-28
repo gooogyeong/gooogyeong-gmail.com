@@ -38,40 +38,36 @@ class HomePage extends Component {
       OCRResult: ""
     };
     this.imageEditor = React.createRef();
-    this.getImageInfo = this.getImageInfo.bind(this);
     this.displayFile = this.displayFile.bind(this);
     this.selectLang = this.selectLang.bind(this);
-    this.saveImageToDisk = this.saveImageToDisk.bind(this);
+    // this.saveImageToDisk = this.saveImageToDisk.bind(this);
     this.doOCR = this.doOCR.bind(this);
     this.handleDetect = this.handleDetect.bind(this);
     this.editOCRResult = this.editOCRResult.bind(this);
   }
 
-  getImageInfo() {
-    console.log(this.state.imageSrc);
-  }
-
-  displayFile(file) {
+  displayFile(file, src) {
     const imageEditorInst = this.imageEditor.current.getInstance();
     imageEditorInst.loadImageFromFile(file).then(result => {
       console.log("old : " + result.oldWidth + ", " + result.oldHeight);
       console.log("new : " + result.newWidth + ", " + result.newHeight);
     });
+    this.setState({ imageSrc: file.name });
   }
 
   selectLang(langArr) {
     this.setState({ language: langArr });
   }
 
-  saveImageToDisk() {
-    const imageEditorInst = this.imageEditor.current.imageEditorInst;
-    const data = imageEditorInst.toDataURL();
-    if (data) {
-      const mimeType = data.split(";")[0];
-      const extension = data.split(";")[0].split("/")[1];
-      download(data, `image.${extension}`, mimeType);
-    }
-  }
+  // saveImageToDisk() {
+  //   const imageEditorInst = this.imageEditor.current.imageEditorInst;
+  //   const data = imageEditorInst.toDataURL();
+  //   if (data) {
+  //     const mimeType = data.split(";")[0];
+  //     const extension = data.split(";")[0].split("/")[1];
+  //     download(data, `image.${extension}`, mimeType);
+  //   }
+  // }
 
   doOCR = async () => {
     const worker = createWorker({
@@ -103,25 +99,22 @@ class HomePage extends Component {
   }
 
   render() {
-    console.log(this.state.currentImg);
-    console.log(this.state.imageSrc);
     return (
       <div className="home-page">
         <div className="center">
-          <h1>Photo Editor</h1>
           <MultipleImageUpload displayFile={this.displayFile} />
-          <Button className="button" onClick={this.saveImageToDisk}>
+          {/* <Button className="button" onClick={this.saveImageToDisk}>
             Save Image to Disk
-          </Button>
-          <Button onClick={this.getImageInfo}>Get Image Info</Button>
+          </Button> */}
         </div>
         <ImageEditor
           ref={this.imageEditor}
           // {...imageEditorOptions}
           includeUI={{
             loadImage: {
-              path: this.state.imageSrc,
-              name: "image"
+              path:
+                "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", //this.state.imageSrc,
+              name: "Blank" //"image"
             },
             theme: myTheme,
             //sets the menu in the toolbar
@@ -131,7 +124,7 @@ class HomePage extends Component {
             uiSize: {
               height: `calc(100vh - 160px)`
             },
-            menuBarPosition: "bottom"
+            menuBarPosition: "right"
           }}
           //sets the size of the image editor
           cssMaxHeight={window.innerHeight}

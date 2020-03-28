@@ -12,7 +12,7 @@ export default class MultipleImageUpload extends Component {
     };
     this.selectFile = this.selectFile.bind(this);
     this.uploadMultipleFiles = this.uploadMultipleFiles.bind(this);
-    this.uploadFiles = this.uploadFiles.bind(this);
+    // this.uploadFiles = this.uploadFiles.bind(this);
   }
 
   toBase64 = file =>
@@ -29,7 +29,7 @@ export default class MultipleImageUpload extends Component {
     //console.log(imgDataURL);
     //this.props.displayFile(imgDataURL);
     //this.props.displayFile(file);
-    this.props.displayFile(file);
+    this.props.displayFile(file, e.target.src);
     //this.setState({ currentImg: imgDataURL });
   }
 
@@ -41,10 +41,10 @@ export default class MultipleImageUpload extends Component {
     this.setState({ file: this.fileArray });
   }
 
-  uploadFiles(e) {
-    e.preventDefault();
-    console.log(this.state.file);
-  }
+  //   uploadFiles(e) {
+  //     e.preventDefault();
+  //     console.log(this.state.file);
+  //   }
 
   render() {
     return (
@@ -70,13 +70,13 @@ export default class MultipleImageUpload extends Component {
             multiple
           />
         </div>
-        <button
+        {/* <button
           type="button"
           className="btn btn-danger btn-block"
           onClick={this.uploadFiles}
         >
           Upload
-        </button>
+        </button> */}
       </form>
     );
   }

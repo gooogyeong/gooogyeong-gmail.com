@@ -39,7 +39,21 @@ const MenuProps = {
   }
 };
 
-const LANG = ["eng", "kor", "jpn", "deu", "fra"];
+//tesseract에서 지원하는 전체 언어: https://github.com/tesseract-ocr/tesseract/blob/master/doc/tesseract.1.asc#LANGUAGES
+// cf. "equ" = math / equation detection mode
+const LANG = [
+  "ara",
+  "ces",
+  "chi_sim",
+  "chi-tra",
+  "deu",
+  "eng",
+  "fra",
+  "ita",
+  "jpn",
+  "kor",
+  "spa"
+];
 
 function getStyles(name, personName, theme) {
   return {

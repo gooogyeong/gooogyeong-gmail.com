@@ -44,8 +44,8 @@ const MenuProps = {
 const LANG = [
   "ara",
   "ces",
-  "chi_sim",
-  "chi-tra",
+  "chi_sim", //간자체
+  "chi_tra", //정자체
   "deu",
   "eng",
   "fra",

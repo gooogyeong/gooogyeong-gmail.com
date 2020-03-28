@@ -8,13 +8,11 @@ import { createWorker } from "tesseract.js";
 import SelectLanguage from "./SelectLanguage.js";
 import MultipleImageUpload from "./MultipleImageUpload";
 
-const franc = require("franc");
-
 const icona = require("tui-image-editor/dist/svg/icon-a.svg");
 const iconb = require("tui-image-editor/dist/svg/icon-b.svg");
 const iconc = require("tui-image-editor/dist/svg/icon-c.svg");
 const icond = require("tui-image-editor/dist/svg/icon-d.svg");
-const download = require("downloadjs");
+//const download = require("downloadjs");
 const myTheme = {
   "menu.backgroundColor": "white",
   "common.backgroundColor": "#151515",
@@ -46,13 +44,12 @@ class HomePage extends Component {
     this.editOCRResult = this.editOCRResult.bind(this);
   }
 
-  displayFile(file, src) {
+  displayFile(file) {
     const imageEditorInst = this.imageEditor.current.getInstance();
     imageEditorInst.loadImageFromFile(file).then(result => {
       console.log("old : " + result.oldWidth + ", " + result.oldHeight);
       console.log("new : " + result.newWidth + ", " + result.newHeight);
     });
-    this.setState({ imageSrc: file.name });
   }
 
   selectLang(langArr) {
@@ -74,9 +71,15 @@ class HomePage extends Component {
       logger: m => console.log(m)
     });
     this.setState({ ocr: "Recognizing..." });
+    let targetLang = "";
+    if (this.state.language.length === 1) {
+      targetLang = this.state.language[0];
+    } else if (this.state.language.length > 1) {
+      targetLang = this.state.language.join("+");
+    }
     await worker.load(); // loads tesseract.js-core scripts
-    await worker.loadLanguage(this.state.language.join("+"));
-    await worker.initialize(this.state.language.join("+")); // initializes the Tesseract API
+    await worker.loadLanguage(targetLang);
+    await worker.initialize(targetLang); // initializes the Tesseract API
     const {
       data: { text }
     } = await worker.recognize(
@@ -124,7 +127,7 @@ class HomePage extends Component {
             uiSize: {
               height: `calc(100vh - 160px)`
             },
-            menuBarPosition: "right"
+            menuBarPosition: "bottom"
           }}
           //sets the size of the image editor
           cssMaxHeight={window.innerHeight}

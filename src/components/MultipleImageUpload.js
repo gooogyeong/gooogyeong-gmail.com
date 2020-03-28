@@ -25,12 +25,7 @@ export default class MultipleImageUpload extends Component {
 
   async selectFile(i, e) {
     var file = this.fileObj[0][i];
-    //const imgDataURL = await this.toBase64(file);
-    //console.log(imgDataURL);
-    //this.props.displayFile(imgDataURL);
-    //this.props.displayFile(file);
-    this.props.displayFile(file, e.target.src);
-    //this.setState({ currentImg: imgDataURL });
+    this.props.displayFile(file);
   }
 
   uploadMultipleFiles(e) {

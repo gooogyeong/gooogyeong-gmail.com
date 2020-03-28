@@ -6,6 +6,8 @@ import Button from "react-bootstrap/Button";
 import { createWorker } from "tesseract.js";
 
 import SelectLanguage from "./SelectLanguage.js";
+import MultipleImageUpload from "./MultipleImageUpload";
+
 const franc = require("franc");
 
 const icona = require("tui-image-editor/dist/svg/icon-a.svg");
@@ -29,17 +31,32 @@ class HomePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      currentImg: "",
       language: [],
       ocr: "",
       imageSrc: "",
       OCRResult: ""
     };
     this.imageEditor = React.createRef();
+    this.getImageInfo = this.getImageInfo.bind(this);
+    this.displayFile = this.displayFile.bind(this);
     this.selectLang = this.selectLang.bind(this);
     this.saveImageToDisk = this.saveImageToDisk.bind(this);
     this.doOCR = this.doOCR.bind(this);
     this.handleDetect = this.handleDetect.bind(this);
     this.editOCRResult = this.editOCRResult.bind(this);
+  }
+
+  getImageInfo() {
+    console.log(this.state.imageSrc);
+  }
+
+  displayFile(file) {
+    const imageEditorInst = this.imageEditor.current.getInstance();
+    imageEditorInst.loadImageFromFile(file).then(result => {
+      console.log("old : " + result.oldWidth + ", " + result.oldHeight);
+      console.log("new : " + result.newWidth + ", " + result.newHeight);
+    });
   }
 
   selectLang(langArr) {
@@ -69,7 +86,7 @@ class HomePage extends Component {
     } = await worker.recognize(
       this.imageEditor.current.imageEditorInst.toDataURL()
     );
-    console.log(franc.all(text));
+    //console.log(franc.all(text));
     this.setState({ ocr: text });
     //console.log(browser.i18n.detectLanguage(text));
     console.log("text", text);
@@ -86,17 +103,21 @@ class HomePage extends Component {
   }
 
   render() {
-    console.log(this.state.language.join("+"));
+    console.log(this.state.currentImg);
+    console.log(this.state.imageSrc);
     return (
       <div className="home-page">
         <div className="center">
           <h1>Photo Editor</h1>
+          <MultipleImageUpload displayFile={this.displayFile} />
           <Button className="button" onClick={this.saveImageToDisk}>
             Save Image to Disk
           </Button>
+          <Button onClick={this.getImageInfo}>Get Image Info</Button>
         </div>
         <ImageEditor
           ref={this.imageEditor}
+          // {...imageEditorOptions}
           includeUI={{
             loadImage: {
               path: this.state.imageSrc,

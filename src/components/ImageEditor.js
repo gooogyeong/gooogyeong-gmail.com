@@ -49,6 +49,8 @@ class ImageEditor extends Component {
 
   loadCanvas(imgData) {
     let canvas = this.refs.resultCanvas;
+    console.log(canvas);
+    //<canvas class="canvas" width="1600" height="800">
     const context = canvas.getContext("2d");
     let _this = this;
 
@@ -261,7 +263,6 @@ class ImageEditor extends Component {
   }
 
   render() {
-    console.log(this.state.imgData);
     return (
       <div class="imageEditor">
         <canvas

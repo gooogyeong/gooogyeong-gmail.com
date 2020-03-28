@@ -33,6 +33,7 @@ class HomePage extends Component {
     this.saveImageToDisk = this.saveImageToDisk.bind(this);
     this.doOCR = this.doOCR.bind(this);
     this.handleDetect = this.handleDetect.bind(this);
+    this.editOCRResult = this.editOCRResult.bind(this);
   }
   // * tesseract.js-core
   //? webWorker: 브라우저의 Main Thread 와 별개로 작동되는 Thread 를 생성
@@ -71,6 +72,10 @@ class HomePage extends Component {
   handleDetect(imageText) {
     console.log("imageText_addCard: ", imageText);
     this.setState({ OCRResult: imageText });
+  }
+
+  editOCRResult(e) {
+    this.setState({ OCRResult: e.target.value });
   }
 
   render() {
@@ -114,6 +119,7 @@ class HomePage extends Component {
         <button onClick={this.doOCR}>detect</button>
         <textarea
           value={this.state.OCRResult}
+          onChange={this.editOCRResult}
           style={{
             width: 1000,
             height: 500

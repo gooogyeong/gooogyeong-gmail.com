@@ -5,6 +5,9 @@ import ImageEditor from "@toast-ui/react-image-editor";
 import Button from "react-bootstrap/Button";
 import { createWorker } from "tesseract.js";
 
+import SelectLanguage from "./SelectLanguage.js";
+const franc = require("franc");
+
 const icona = require("tui-image-editor/dist/svg/icon-a.svg");
 const iconb = require("tui-image-editor/dist/svg/icon-b.svg");
 const iconc = require("tui-image-editor/dist/svg/icon-c.svg");
@@ -26,21 +29,22 @@ class HomePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      language: [],
+      ocr: "",
       imageSrc: "",
       OCRResult: ""
     };
     this.imageEditor = React.createRef();
+    this.selectLang = this.selectLang.bind(this);
     this.saveImageToDisk = this.saveImageToDisk.bind(this);
     this.doOCR = this.doOCR.bind(this);
     this.handleDetect = this.handleDetect.bind(this);
+    this.editOCRResult = this.editOCRResult.bind(this);
   }
-  // * tesseract.js-core
-  //? webWorker: 브라우저의 Main Thread 와 별개로 작동되는 Thread 를 생성
-  //? 브라우저 렌더링 같은 Main Thread 의 작업을 방해하지 않고, 새로운 Thread 에서 스크립트를 실행
-  // 브라우저의 리소스를 많이 사용해서 webWorker에서 동작/ 최초 인식 때 한번만 가져오고 이후부터는 캐시에서 불러옴
-  worker = createWorker({
-    logger: m => console.log(m)
-  });
+
+  selectLang(langArr) {
+    this.setState({ language: langArr });
+  }
 
   saveImageToDisk() {
     const imageEditorInst = this.imageEditor.current.imageEditorInst;
@@ -53,17 +57,21 @@ class HomePage extends Component {
   }
 
   doOCR = async () => {
-    // console.log("image", this.state.image);
+    const worker = createWorker({
+      logger: m => console.log(m)
+    });
     this.setState({ ocr: "Recognizing..." });
-    await this.worker.load(); // loads tesseract.js-core scripts
-    await this.worker.loadLanguage("eng");
-    await this.worker.initialize("eng"); // initializes the Tesseract API
+    await worker.load(); // loads tesseract.js-core scripts
+    await worker.loadLanguage(this.state.language.join("+"));
+    await worker.initialize(this.state.language.join("+")); // initializes the Tesseract API
     const {
       data: { text }
-    } = await this.worker.recognize(
+    } = await worker.recognize(
       this.imageEditor.current.imageEditorInst.toDataURL()
     );
+    console.log(franc.all(text));
     this.setState({ ocr: text });
+    //console.log(browser.i18n.detectLanguage(text));
     console.log("text", text);
     this.handleDetect(text);
   };
@@ -73,10 +81,12 @@ class HomePage extends Component {
     this.setState({ OCRResult: imageText });
   }
 
+  editOCRResult(e) {
+    this.setState({ OCRResult: e.target.value });
+  }
+
   render() {
-    console.log(this.state.imageSrc);
-    //console.log(this.imageEditor.current.getInstance().bind(this));
-    //console.dir(this.imageEditor.current);
+    console.log(this.state.language.join("+"));
     return (
       <div className="home-page">
         <div className="center">
@@ -112,7 +122,9 @@ class HomePage extends Component {
           usageStatistics={true}
         />
         <button onClick={this.doOCR}>detect</button>
+        <SelectLanguage selectLang={this.selectLang} />
         <textarea
+          onChange={this.editOCRResult}
           value={this.state.OCRResult}
           style={{
             width: 1000,

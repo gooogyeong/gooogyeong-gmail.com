@@ -11,6 +11,7 @@
     "@toast-ui/react-image-editor": "^1.2.0",
     "bootstrap": "^4.4.1",
     "downloadjs": "^1.4.7",
+    "franc": "^5.0.0",
     "jquery": "^3.4.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.0",

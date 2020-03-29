@@ -2,7 +2,7 @@ import React, { Component, useState, useEffect } from "react";
 import "./HomePage.css";
 import "tui-image-editor/dist/tui-image-editor.css";
 import ImageEditor from "@toast-ui/react-image-editor";
-import Button from "react-bootstrap/Button";
+//import Button from "react-bootstrap/Button";
 import { createWorker } from "tesseract.js";
 
 import SelectLanguage from "./SelectLanguage.js";
@@ -31,6 +31,7 @@ class HomePage extends Component {
     this.state = {
       fileObj: [],
       fileArray: [],
+      cardBin: [],
       currentImg: "",
       language: [],
       ocr: "",
@@ -39,6 +40,8 @@ class HomePage extends Component {
     };
     this.imageEditor = React.createRef();
     this.uploadMultipleFiles = this.uploadMultipleFiles.bind(this);
+    this.handleCheck = this.handleCheck.bind(this);
+    this.discardFile = this.discardFile.bind(this);
     this.selectFile = this.selectFile.bind(this);
     this.displayFile = this.displayFile.bind(this);
     this.selectLang = this.selectLang.bind(this);
@@ -50,7 +53,7 @@ class HomePage extends Component {
   }
 
   uploadMultipleFiles(e) {
-    console.log(e.target.files);
+    //console.log(e.target.files);
     const newFileObj = [...this.state.fileObj];
     for (let i = 0; i < e.target.files.length; i++) {
       newFileObj.push(e.target.files[i]);
@@ -63,6 +66,47 @@ class HomePage extends Component {
       newFileArray.push(URL.createObjectURL(newFileObj[i]));
     }
     this.setState({ fileArray: newFileArray });
+  }
+
+  handleCheck(i, e) {
+    //console.log(i);
+    const newCardBin = [...this.state.cardBin];
+    if (e.target.checked) {
+      newCardBin.push(i);
+      //newCardBin.sort();
+    } else {
+      for (let j = 0; j < newCardBin.length; i++) {
+        if (newCardBin[j] === i) {
+          newCardBin.splice(j, 1);
+        }
+      }
+    }
+    this.setState({ cardBin: newCardBin });
+  }
+
+  discardFile() {
+    const oldFileObj = [...this.state.fileObj];
+    const newFileObj = [];
+    const newFileArray = [];
+    //const fileBin = [];
+    for (let i = 0; i < oldFileObj.length; i++) {
+      if (this.state.cardBin.includes(i)) {
+        oldFileObj[i] = null;
+      }
+    }
+    for (let i = 0; i < oldFileObj.length; i++) {
+      if (oldFileObj[i]) {
+        newFileObj.push(oldFileObj[i]);
+      }
+    }
+    for (let i = 0; i < newFileObj.length; i++) {
+      newFileArray.push(URL.createObjectURL(newFileObj[i]));
+    }
+    this.setState({
+      fileObj: newFileObj,
+      fileArray: newFileArray,
+      cardBin: []
+    });
   }
 
   selectFile(i, e) {
@@ -109,16 +153,8 @@ class HomePage extends Component {
   saveChange() {
     const imageEditorInst = this.imageEditor.current.imageEditorInst;
     console.log(imageEditorInst);
-    //console.log(imageEditorInst._graphics.imageName);
     const fileName = imageEditorInst._graphics.imageName;
-    //console.log(fileName.split(".")[0]);
-    // console.log(imageEditorInst._graphics.canvasImage._originalElement.src);
-    // imageEditorInst.toBlob(function(blob) {
-    //   console.log(blob);
-    // });
     const data = imageEditorInst.toDataURL();
-    // const blob = this.dataURItoBlob(data);
-    // console.log(blob);
     let file;
     if (data) {
       const mimeType = data.split(";")[0];
@@ -182,27 +218,28 @@ class HomePage extends Component {
     } else if (this.state.language.length > 1) {
       targetLang = this.state.language.join("+");
     }
-
     let newOCR = "";
-    const dataURLArr = this.state.fileObj.map(
-      async function(fileObj) {
-        const dataURL = await this.toBase64(fileObj);
-        const worker = createWorker({
-          logger: m => console.log(m)
-        });
-        await worker.load(); // loads tesseract.js-core scripts
-        await worker.loadLanguage(targetLang);
-        await worker.initialize(targetLang); // initializes the Tesseract API
-        const {
-          data: { text }
-        } = await worker.recognize(dataURL);
-        return text;
-        //   newOCR += text;
-        //   console.log(newOCR);
-        //   return newOCR;
+    const promises = this.state.fileObj.map(
+      async function(fileObj, i) {
+        if (this.state.cardBin.includes(i)) {
+          const dataURL = await this.toBase64(fileObj);
+          const worker = createWorker({
+            logger: m => console.log(m)
+          });
+          await worker.load(); // loads tesseract.js-core scripts
+          await worker.loadLanguage(targetLang);
+          await worker.initialize(targetLang); // initializes the Tesseract API
+          const {
+            data: { text }
+          } = await worker.recognize(dataURL);
+          return text;
+          //   newOCR += text;
+          //   console.log(newOCR);
+          //   return newOCR;
+        }
       }.bind(this)
     );
-    return Promise.all(dataURLArr)
+    return Promise.all(promises)
       .then(res => {
         //console.log(res); //배열
         this.setState({ OCRResult: res });
@@ -222,21 +259,25 @@ class HomePage extends Component {
   }
 
   render() {
+    console.log(this.state.cardBin);
+    console.log(this.state.fileObj);
     // console.log(this.state.fileObj);
     // console.log(this.state.fileArray);
     //["blob:http://localhost:3000/a8984720-e245-4473-97ad-a729f87302a6", {...s}]
     return (
       <div className="home-page">
         <div className="center">
+          <button onClick={this.discardFile}>discard</button>
           <MultipleImageUpload
             fileArray={this.state.fileArray}
             uploadMultipleFiles={this.uploadMultipleFiles}
+            handleCheck={this.handleCheck}
             selectFile={this.selectFile}
             displayFile={this.displayFile}
           />
-          <Button className="button" onClick={this.saveChange}>
-            Save Change
-          </Button>
+          <button className="button" onClick={this.saveChange}>
+            save change
+          </button>
         </div>
         <ImageEditor
           ref={this.imageEditor}
@@ -267,7 +308,7 @@ class HomePage extends Component {
           usageStatistics={true}
         />
         {/* <button onClick={this.doOCR}>detect current item</button> */}
-        <button onClick={this.doOCR}>detect all item(s)</button>
+        <button onClick={this.doOCR}>detect select item(s)</button>
         <SelectLanguage selectLang={this.selectLang} />
         <textarea
           onChange={this.editOCRResult}

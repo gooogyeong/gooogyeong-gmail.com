@@ -44,6 +44,7 @@ class HomePage extends Component {
     this.selectLang = this.selectLang.bind(this);
     this.saveChange = this.saveChange.bind(this);
     this.doOCR = this.doOCR.bind(this);
+    //this.doOCRAll = this.doOCRAll.bind(this);
     this.handleDetect = this.handleDetect.bind(this);
     this.editOCRResult = this.editOCRResult.bind(this);
   }
@@ -140,10 +141,40 @@ class HomePage extends Component {
     this.setState({ fileArray: newFileArray });
   }
 
-  doOCR = async () => {
-    const worker = createWorker({
-      logger: m => console.log(m)
+  // doOCR = async () => {
+  //   const worker = createWorker({
+  //     logger: m => console.log(m)
+  //   });
+  //   this.setState({ ocr: "Recognizing..." });
+  //   let targetLang = "";
+  //   if (this.state.language.length === 1) {
+  //     targetLang = this.state.language[0];
+  //   } else if (this.state.language.length > 1) {
+  //     targetLang = this.state.language.join("+");
+  //   }
+  //   await worker.load(); // loads tesseract.js-core scripts
+  //   await worker.loadLanguage(targetLang);
+  //   await worker.initialize(targetLang); // initializes the Tesseract API
+  //   const {
+  //     data: { text }
+  //   } = await worker.recognize(
+  //     this.imageEditor.current.imageEditorInst.toDataURL()
+  //   );
+  //   this.setState({ ocr: text });
+  //   console.log("text", text);
+  //   this.handleDetect(text);
+  // };
+
+  toBase64 = file =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
     });
+
+  //TODO: create separate card / create one card 나눠야함
+  doOCR = async () => {
     this.setState({ ocr: "Recognizing..." });
     let targetLang = "";
     if (this.state.language.length === 1) {
@@ -151,19 +182,34 @@ class HomePage extends Component {
     } else if (this.state.language.length > 1) {
       targetLang = this.state.language.join("+");
     }
-    await worker.load(); // loads tesseract.js-core scripts
-    await worker.loadLanguage(targetLang);
-    await worker.initialize(targetLang); // initializes the Tesseract API
-    const {
-      data: { text }
-    } = await worker.recognize(
-      this.imageEditor.current.imageEditorInst.toDataURL()
+
+    let newOCR = "";
+    const dataURLArr = this.state.fileObj.map(
+      async function(fileObj) {
+        const dataURL = await this.toBase64(fileObj);
+        const worker = createWorker({
+          logger: m => console.log(m)
+        });
+        await worker.load(); // loads tesseract.js-core scripts
+        await worker.loadLanguage(targetLang);
+        await worker.initialize(targetLang); // initializes the Tesseract API
+        const {
+          data: { text }
+        } = await worker.recognize(dataURL);
+        return text;
+        //   newOCR += text;
+        //   console.log(newOCR);
+        //   return newOCR;
+      }.bind(this)
     );
-    //console.log(franc.all(text));
-    this.setState({ ocr: text });
-    //console.log(browser.i18n.detectLanguage(text));
-    console.log("text", text);
-    this.handleDetect(text);
+    return Promise.all(dataURLArr)
+      .then(res => {
+        //console.log(res); //배열
+        this.setState({ OCRResult: res });
+      })
+      .catch(error => {
+        console.log(error.message);
+      });
   };
 
   handleDetect(imageText) {
@@ -176,8 +222,8 @@ class HomePage extends Component {
   }
 
   render() {
-    console.log(this.state.fileObj);
-    console.log(this.state.fileArray);
+    // console.log(this.state.fileObj);
+    // console.log(this.state.fileArray);
     //["blob:http://localhost:3000/a8984720-e245-4473-97ad-a729f87302a6", {...s}]
     return (
       <div className="home-page">
@@ -209,7 +255,7 @@ class HomePage extends Component {
             uiSize: {
               height: `calc(100vh - 160px)`
             },
-            menuBarPosition: "bottom"
+            menuBarPosition: "top"
           }}
           //sets the size of the image editor
           cssMaxHeight={window.innerHeight}
@@ -220,7 +266,8 @@ class HomePage extends Component {
           }}
           usageStatistics={true}
         />
-        <button onClick={this.doOCR}>detect</button>
+        {/* <button onClick={this.doOCR}>detect current item</button> */}
+        <button onClick={this.doOCR}>detect all item(s)</button>
         <SelectLanguage selectLang={this.selectLang} />
         <textarea
           onChange={this.editOCRResult}

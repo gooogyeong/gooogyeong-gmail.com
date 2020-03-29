@@ -12,7 +12,7 @@ const icona = require("tui-image-editor/dist/svg/icon-a.svg");
 const iconb = require("tui-image-editor/dist/svg/icon-b.svg");
 const iconc = require("tui-image-editor/dist/svg/icon-c.svg");
 const icond = require("tui-image-editor/dist/svg/icon-d.svg");
-//const download = require("downloadjs");
+const download = require("downloadjs");
 const myTheme = {
   "menu.backgroundColor": "white",
   "common.backgroundColor": "#151515",
@@ -29,6 +29,8 @@ class HomePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      fileObj: [],
+      fileArray: [],
       currentImg: "",
       language: [],
       ocr: "",
@@ -36,19 +38,45 @@ class HomePage extends Component {
       OCRResult: ""
     };
     this.imageEditor = React.createRef();
+    this.uploadMultipleFiles = this.uploadMultipleFiles.bind(this);
+    this.selectFile = this.selectFile.bind(this);
     this.displayFile = this.displayFile.bind(this);
     this.selectLang = this.selectLang.bind(this);
-    // this.saveImageToDisk = this.saveImageToDisk.bind(this);
+    this.saveChange = this.saveChange.bind(this);
     this.doOCR = this.doOCR.bind(this);
     this.handleDetect = this.handleDetect.bind(this);
     this.editOCRResult = this.editOCRResult.bind(this);
   }
 
-  displayFile(file) {
+  uploadMultipleFiles(e) {
+    console.log(e.target.files);
+    const newFileObj = [...this.state.fileObj];
+    for (let i = 0; i < e.target.files.length; i++) {
+      newFileObj.push(e.target.files[i]);
+    }
+    this.setState({ fileObj: newFileObj });
+    //this.fileObj.push(e.target.files);
+
+    const newFileArray = [];
+    for (let i = 0; i < newFileObj.length; i++) {
+      newFileArray.push(URL.createObjectURL(newFileObj[i]));
+    }
+    this.setState({ fileArray: newFileArray });
+  }
+
+  selectFile(i, e) {
+    //console.log(i);
+    var file = this.state.fileObj[i];
+    this.displayFile(file, i);
+  }
+
+  displayFile(file, i) {
+    console.log(i);
     const imageEditorInst = this.imageEditor.current.getInstance();
     imageEditorInst.loadImageFromFile(file).then(result => {
-      console.log("old : " + result.oldWidth + ", " + result.oldHeight);
-      console.log("new : " + result.newWidth + ", " + result.newHeight);
+      console.log("display success");
+      // console.log("old : " + result.oldWidth + ", " + result.oldHeight);
+      // console.log("new : " + result.newWidth + ", " + result.newHeight);
     });
   }
 
@@ -56,15 +84,61 @@ class HomePage extends Component {
     this.setState({ language: langArr });
   }
 
-  // saveImageToDisk() {
-  //   const imageEditorInst = this.imageEditor.current.imageEditorInst;
-  //   const data = imageEditorInst.toDataURL();
-  //   if (data) {
-  //     const mimeType = data.split(";")[0];
-  //     const extension = data.split(";")[0].split("/")[1];
-  //     download(data, `image.${extension}`, mimeType);
+  // dataURItoBlob(dataURI) {
+  //   var binary = atob(dataURI.split(",")[1]);
+  //   var array = [];
+  //   for (var i = 0; i < binary.length; i++) {
+  //     array.push(binary.charCodeAt(i));
   //   }
+  //   return new Blob([new Uint8Array(array)], { type: "image/jpeg" });
   // }
+
+  dataURLtoFile(dataurl, filename) {
+    var arr = dataurl.split(","),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  saveChange() {
+    const imageEditorInst = this.imageEditor.current.imageEditorInst;
+    console.log(imageEditorInst);
+    //console.log(imageEditorInst._graphics.imageName);
+    const fileName = imageEditorInst._graphics.imageName;
+    //console.log(fileName.split(".")[0]);
+    // console.log(imageEditorInst._graphics.canvasImage._originalElement.src);
+    // imageEditorInst.toBlob(function(blob) {
+    //   console.log(blob);
+    // });
+    const data = imageEditorInst.toDataURL();
+    // const blob = this.dataURItoBlob(data);
+    // console.log(blob);
+    let file;
+    if (data) {
+      const mimeType = data.split(";")[0];
+      //console.log(mimeType); //data:image/png
+      const extension = data.split(";")[0].split("/")[1];
+      //console.log(extension); //png
+      //download(data, `image.${extension}`, mimeType);
+      file = this.dataURLtoFile(data, `${fileName.split(".")[0]}.${extension}`);
+    }
+    console.log(file);
+    const newFileObj = [...this.state.fileObj];
+    const newFileArray = [...this.state.fileArray];
+    for (let i = 0; i < newFileObj.length; i++) {
+      if (newFileObj[i].name === fileName) {
+        newFileObj[i] = file;
+        newFileArray[i] = URL.createObjectURL(file);
+      }
+    }
+    this.setState({ fileObj: newFileObj });
+    this.setState({ fileArray: newFileArray });
+  }
 
   doOCR = async () => {
     const worker = createWorker({
@@ -102,13 +176,21 @@ class HomePage extends Component {
   }
 
   render() {
+    console.log(this.state.fileObj);
+    console.log(this.state.fileArray);
+    //["blob:http://localhost:3000/a8984720-e245-4473-97ad-a729f87302a6", {...s}]
     return (
       <div className="home-page">
         <div className="center">
-          <MultipleImageUpload displayFile={this.displayFile} />
-          {/* <Button className="button" onClick={this.saveImageToDisk}>
-            Save Image to Disk
-          </Button> */}
+          <MultipleImageUpload
+            fileArray={this.state.fileArray}
+            uploadMultipleFiles={this.uploadMultipleFiles}
+            selectFile={this.selectFile}
+            displayFile={this.displayFile}
+          />
+          <Button className="button" onClick={this.saveChange}>
+            Save Change
+          </Button>
         </div>
         <ImageEditor
           ref={this.imageEditor}

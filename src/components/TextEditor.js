@@ -16,9 +16,6 @@ import Grid from "@toast-ui/react-grid";
 export default function TextEditor() {
   return (
     <div className="App">
-      <h1>Hello CodeSandbox</h1>
-      <h2>Start editing to see some magic happen!</h2>
-
       <Editor
         initialValue="hello react editor world!"
         previewStyle="tab"

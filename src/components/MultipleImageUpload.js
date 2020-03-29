@@ -1,13 +1,12 @@
 import React, { Component } from "react";
 
 export default class MultipleImageUpload extends Component {
-  fileObj = [];
-  fileArray = [];
-
   constructor(props) {
     super(props);
     this.state = {
-      file: [null]
+      fileObj: [],
+      fileArray: []
+      //file: []
       //currentImg: ""
     };
     this.selectFile = this.selectFile.bind(this);
@@ -15,25 +14,34 @@ export default class MultipleImageUpload extends Component {
     // this.uploadFiles = this.uploadFiles.bind(this);
   }
 
-  toBase64 = file =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
+  //   toBase64 = file =>
+  //     new Promise((resolve, reject) => {
+  //       const reader = new FileReader();
+  //       reader.readAsDataURL(file);
+  //       reader.onload = () => resolve(reader.result);
+  //       reader.onerror = error => reject(error);
+  //     });
 
   async selectFile(i, e) {
-    var file = this.fileObj[0][i];
+    var file = this.state.fileObj[i];
     this.props.displayFile(file);
   }
 
   uploadMultipleFiles(e) {
-    this.fileObj.push(e.target.files);
-    for (let i = 0; i < this.fileObj[0].length; i++) {
-      this.fileArray.push(URL.createObjectURL(this.fileObj[0][i]));
+    console.log(e.target.files);
+    const newFileObj = [...this.state.fileObj];
+    for (let i = 0; i < e.target.files.length; i++) {
+      newFileObj.push(e.target.files[i]);
     }
-    this.setState({ file: this.fileArray });
+    this.setState({ fileObj: newFileObj });
+    //this.fileObj.push(e.target.files);
+    console.log(this.state.fileObj);
+    const newFileArray = [];
+    for (let i = 0; i < newFileObj.length; i++) {
+      newFileArray.push(URL.createObjectURL(newFileObj[i]));
+    }
+    console.log(this.fileArray);
+    this.setState({ fileArray: newFileArray });
   }
 
   //   uploadFiles(e) {
@@ -42,10 +50,12 @@ export default class MultipleImageUpload extends Component {
   //   }
 
   render() {
+    console.log(this.state.fileArray);
+    console.log(this.state.fileObj);
     return (
       <form>
         <div className="form-group multi-preview">
-          {(this.fileArray || []).map((url, i) => (
+          {(this.state.fileArray || []).map((url, i) => (
             <img
               onClick={e => {
                 this.selectFile(i, e);

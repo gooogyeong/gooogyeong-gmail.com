@@ -11,7 +11,7 @@ function App() {
     <div className="App">
       <Router history={history}>
         {/* <TopBar /> */}
-        <Route path="/" exact component={TextEditor} />
+        <Route path="/" exact component={HomePage} />
       </Router>
     </div>
   );

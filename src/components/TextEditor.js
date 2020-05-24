@@ -13,14 +13,22 @@ import Grid from "@toast-ui/react-grid";
 
 //import "./styles.css";
 
+const template = `| question | answer | note |
+| -------- | ------ | ---- |
+|  |  |  |`;
+
 export default function TextEditor() {
   return (
     <div className="App">
       <Editor
-        initialValue="hello react editor world!"
+        initialValue={template}
+        //        //initialValue="hello react editor world!"
+        //        initialValue={`| question | answer | note |
+        //        | -------- | ------ | ---- |
+        //        | | | |`}
         previewStyle="tab"
         height="300px"
-        initialEditType="markdown"
+        initialEditType="wysiwyg"
         useCommandShortcut={true}
         usageStatistics={false}
       />

@@ -10,22 +10,22 @@ import Select from "@material-ui/core/Select";
 //import Checkbox from "@material-ui/core/Checkbox";
 import Chip from "@material-ui/core/Chip";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
-    maxWidth: 300
+    maxWidth: 300,
   },
   chips: {
     display: "flex",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
   },
   chip: {
-    margin: 2
+    margin: 2,
   },
   noLabel: {
-    marginTop: theme.spacing(3)
-  }
+    marginTop: theme.spacing(3),
+  },
 }));
 
 const ITEM_HEIGHT = 48;
@@ -34,9 +34,9 @@ const MenuProps = {
   PaperProps: {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250
-    }
-  }
+      width: 250,
+    },
+  },
 };
 
 //tesseract에서 지원하는 전체 언어: https://github.com/tesseract-ocr/tesseract/blob/master/doc/tesseract.1.asc#LANGUAGES
@@ -52,7 +52,7 @@ const LANG = [
   "ita",
   "jpn",
   "kor",
-  "spa"
+  "spa",
 ];
 
 function getStyles(name, personName, theme) {
@@ -60,7 +60,7 @@ function getStyles(name, personName, theme) {
     fontWeight:
       personName.indexOf(name) === -1
         ? theme.typography.fontWeightRegular
-        : theme.typography.fontWeightMedium
+        : theme.typography.fontWeightMedium,
   };
 }
 
@@ -69,7 +69,7 @@ export default function MultipleSelect(props) {
   const theme = useTheme();
   const [personName, setPersonName] = React.useState([]);
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setPersonName(e.target.value);
     console.log(e.target.value);
     props.selectLang(e.target.value);
@@ -135,16 +135,16 @@ export default function MultipleSelect(props) {
           value={personName}
           onChange={handleChange}
           input={<Input id="select-multiple-chip" />}
-          renderValue={selected => (
+          renderValue={(selected) => (
             <div className={classes.chips}>
-              {selected.map(value => (
+              {selected.map((value) => (
                 <Chip key={value} label={value} className={classes.chip} />
               ))}
             </div>
           )}
           MenuProps={MenuProps}
         >
-          {LANG.map(name => (
+          {LANG.map((name) => (
             <MenuItem
               key={name}
               value={name}
